@@ -23,7 +23,7 @@ export default function TriagePage() {
     fetch("/api/newsletters")
       .then((r) => r.json())
       .then((data) => {
-        setNewsletters(data);
+        setNewsletters(Array.isArray(data) ? data : []);
         setLoading(false);
       });
   }, []);

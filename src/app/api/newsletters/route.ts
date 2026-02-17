@@ -5,22 +5,18 @@ import { isAuthenticated } from "@/lib/gmail";
 import { notInArray } from "drizzle-orm";
 
 export async function GET() {
-  if (!isAuthenticated()) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  }
+  // If authenticated, sync from Gmail first
+  if (isAuthenticated()) {
+    const label = process.env.GMAIL_LABEL || "Newsletters";
+    const gmailNewsletters = await fetchNewsletters(label);
 
-  const label = process.env.GMAIL_LABEL || "Newsletters";
-
-  // Fetch from Gmail
-  const gmailNewsletters = await fetchNewsletters(label);
-
-  // Upsert into DB
-  for (const nl of gmailNewsletters) {
-    const existing = await db.query.newsletters.findFirst({
-      where: (newsletters, { eq }) => eq(newsletters.gmailId, nl.gmailId),
-    });
-    if (!existing) {
-      await db.insert(schema.newsletters).values(nl);
+    for (const nl of gmailNewsletters) {
+      const existing = await db.query.newsletters.findFirst({
+        where: (newsletters, { eq }) => eq(newsletters.gmailId, nl.gmailId),
+      });
+      if (!existing) {
+        await db.insert(schema.newsletters).values(nl);
+      }
     }
   }
 
