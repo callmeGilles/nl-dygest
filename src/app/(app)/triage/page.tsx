@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { TriageCard } from "@/components/triage-card";
-import { ProgressBar } from "@/components/progress-bar";
 import { useRouter } from "next/navigation";
+import { TriageCard } from "@/components/triage-card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Newsletter {
   id: number;
@@ -16,6 +18,8 @@ interface Newsletter {
 export default function TriagePage() {
   const [newsletters, setNewsletters] = useState<Newsletter[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [keptCount, setKeptCount] = useState(0);
+  const [skippedCount, setSkippedCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -36,12 +40,13 @@ export default function TriagePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ newsletterId: newsletter.id, decision }),
       });
+      if (decision === "kept") setKeptCount((c) => c + 1);
+      else setSkippedCount((c) => c + 1);
       setCurrentIndex((i) => i + 1);
     },
     [newsletters, currentIndex]
   );
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (currentIndex >= newsletters.length) return;
@@ -62,54 +67,79 @@ export default function TriagePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-500">Loading newsletters...</p>
+      <div className="min-h-[80vh] flex flex-col items-center justify-center p-4 gap-4">
+        <Skeleton className="w-full max-w-sm h-80 rounded-2xl" />
+        <div className="flex gap-4">
+          <Skeleton className="w-24 h-12 rounded-xl" />
+          <Skeleton className="w-24 h-12 rounded-xl" />
+        </div>
+      </div>
+    );
+  }
+
+  if (newsletters.length === 0) {
+    return (
+      <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
+        <p className="text-lg text-slate-500">No newsletters to triage.</p>
+        <p className="text-sm text-slate-400 mt-1">Check back later or connect a different label.</p>
       </div>
     );
   }
 
   const isDone = currentIndex >= newsletters.length;
+  const progress = (currentIndex / newsletters.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-      <h1 className="text-2xl font-bold text-gray-900 mb-8">Triage</h1>
-
+    <div className="min-h-[80vh] bg-slate-50 flex flex-col items-center justify-center p-4">
       {!isDone ? (
-        <>
-          <ProgressBar current={currentIndex} total={newsletters.length} />
+        <div className="w-full max-w-sm space-y-6">
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm text-slate-500">
+              <span>{currentIndex + 1} of {newsletters.length}</span>
+              <span>Kept: {keptCount} &middot; Skipped: {skippedCount}</span>
+            </div>
+            <Progress value={progress} className="h-1.5" />
+          </div>
+
           <TriageCard
+            key={newsletters[currentIndex].id}
             newsletter={newsletters[currentIndex]}
             onDecision={handleDecision}
           />
-          <div className="flex gap-4 mt-6">
-            <button
+
+          <div className="flex justify-center gap-4">
+            <Button
+              variant="outline"
+              size="lg"
               onClick={() => handleDecision("skipped")}
-              className="px-6 py-3 bg-red-100 text-red-700 rounded-full font-medium hover:bg-red-200 transition"
+              className="rounded-xl w-28 h-12 text-red-600 border-red-200 hover:bg-red-50"
             >
               Skip
-            </button>
-            <button
+            </Button>
+            <Button
+              size="lg"
               onClick={() => handleDecision("kept")}
-              className="px-6 py-3 bg-green-100 text-green-700 rounded-full font-medium hover:bg-green-200 transition"
+              className="rounded-xl w-28 h-12 bg-green-600 hover:bg-green-700"
             >
               Keep
-            </button>
+            </Button>
           </div>
-          <p className="text-xs text-gray-400 mt-4">
-            Use arrow keys: ← skip · → keep
-          </p>
-        </>
+
+          <p className="text-xs text-slate-400 text-center">&larr; skip &middot; keep &rarr;</p>
+        </div>
       ) : (
-        <div className="text-center">
-          <p className="text-lg text-gray-600 mb-4">
-            All caught up! Ready to generate your edition.
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-semibold text-slate-900">All done!</h2>
+          <p className="text-slate-500">
+            Kept {keptCount} &middot; Skipped {skippedCount}
           </p>
-          <button
+          <Button
+            size="lg"
             onClick={handleGenerate}
-            className="px-8 py-3 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition"
+            className="rounded-xl h-12 px-8 text-base"
           >
-            Generate My Edition
-          </button>
+            Generate my dygest
+          </Button>
         </div>
       )}
     </div>
