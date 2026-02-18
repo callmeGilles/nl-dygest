@@ -1,6 +1,6 @@
 import { Readability } from "@mozilla/readability";
 import { JSDOM } from "jsdom";
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenAI } from "@google/genai";
 
 export function extractReadableContent(html: string): string {
   const dom = new JSDOM(html, { url: "https://example.com" });
@@ -31,17 +31,38 @@ export interface ArticleSummary {
   reading_time: number;
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 export async function summarizeNewsletter(html: string): Promise<ArticleSummary> {
   const content = extractReadableContent(html);
   const prompt = buildSummarizationPrompt(content);
 
-  const client = new Anthropic();
-  const message = await client.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 1024,
-    messages: [{ role: "user", content: prompt }],
-  });
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
-  const text = message.content[0].type === "text" ? message.content[0].text : "";
-  return JSON.parse(text) as ArticleSummary;
+  const maxRetries = 3;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+        },
+      });
+
+      const text = response.text ?? "";
+      return JSON.parse(text) as ArticleSummary;
+    } catch (err: unknown) {
+      const isRateLimit =
+        err instanceof Error && (err.message.includes("429") || err.message.includes("RESOURCE_EXHAUSTED"));
+      if (isRateLimit && attempt < maxRetries) {
+        const delay = (attempt + 1) * 10_000; // 10s, 20s, 30s
+        console.log(`Rate limited, retrying in ${delay / 1000}s...`);
+        await sleep(delay);
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw new Error("Max retries exceeded");
 }

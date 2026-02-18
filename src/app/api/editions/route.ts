@@ -27,13 +27,17 @@ export async function POST() {
       .values({ generatedAt: new Date().toISOString() })
       .returning();
 
-    // Summarize each newsletter
-    for (const decision of toProcess) {
+    // Summarize each newsletter (with delay to respect rate limits)
+    for (let i = 0; i < toProcess.length; i++) {
+      const decision = toProcess[i];
       const newsletter = await db.query.newsletters.findFirst({
         where: eq(schema.newsletters.id, decision.newsletterId),
       });
 
       if (!newsletter) continue;
+
+      // Wait 5s between calls to stay within free tier rate limits
+      if (i > 0) await new Promise((r) => setTimeout(r, 5000));
 
       const summary = await summarizeNewsletter(newsletter.rawHtml);
 

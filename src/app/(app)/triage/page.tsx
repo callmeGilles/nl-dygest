@@ -21,6 +21,8 @@ export default function TriagePage() {
   const [keptCount, setKeptCount] = useState(0);
   const [skippedCount, setSkippedCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -58,16 +60,28 @@ export default function TriagePage() {
   }, [handleDecision, currentIndex, newsletters.length]);
 
   const handleGenerate = async () => {
-    const res = await fetch("/api/editions", { method: "POST" });
-    const data = await res.json();
-    if (data.editionId) {
-      // Mark onboarding as complete
-      await fetch("/api/preferences", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ onboardingCompleted: true }),
-      });
-      router.push(`/read/${data.editionId}`);
+    setGenerating(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/editions", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Generation failed");
+        setGenerating(false);
+        return;
+      }
+      if (data.editionId) {
+        // Mark onboarding as complete
+        await fetch("/api/preferences", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ onboardingCompleted: true }),
+        });
+        router.push(`/read/${data.editionId}`);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Network error");
+      setGenerating(false);
     }
   };
 
@@ -142,10 +156,14 @@ export default function TriagePage() {
           <Button
             size="lg"
             onClick={handleGenerate}
+            disabled={generating}
             className="rounded-xl h-12 px-8 text-base"
           >
-            Generate my briefflow
+            {generating ? "Generating..." : "Generate my briefflow"}
           </Button>
+          {error && (
+            <p className="text-sm text-red-500 mt-2">{error}</p>
+          )}
         </div>
       )}
     </div>
