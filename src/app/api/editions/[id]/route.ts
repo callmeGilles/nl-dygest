@@ -21,9 +21,24 @@ export async function GET(
     where: eq(schema.editionArticles.editionId, editionId),
   });
 
-  // Group articles by category
-  const grouped: Record<string, typeof articles> = {};
-  for (const article of articles) {
+  // Fetch newsletter data for each article (for reading pane)
+  const articlesWithContent = await Promise.all(
+    articles.map(async (article) => {
+      const newsletter = await db.query.newsletters.findFirst({
+        where: eq(schema.newsletters.id, article.newsletterId),
+      });
+      return {
+        ...article,
+        sender: newsletter?.sender || "",
+        rawHtml: newsletter?.rawHtml || "",
+        receivedAt: newsletter?.receivedAt || "",
+      };
+    })
+  );
+
+  // Group by category
+  const grouped: Record<string, typeof articlesWithContent> = {};
+  for (const article of articlesWithContent) {
     if (!grouped[article.category]) grouped[article.category] = [];
     grouped[article.category].push(article);
   }

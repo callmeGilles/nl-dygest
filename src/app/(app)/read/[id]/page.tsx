@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { ArticleCard } from "@/components/article-card";
-import { StatsBar } from "@/components/stats-bar";
+import { ArticleList } from "@/components/article-list";
+import { ReadingPane } from "@/components/reading-pane";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 interface Article {
   id: number;
@@ -12,6 +14,10 @@ interface Article {
   keyPoints: string;
   readingTime: number;
   newsletterId: number;
+  sender: string;
+  rawHtml: string;
+  receivedAt: string;
+  category: string;
 }
 
 interface EditionData {
@@ -19,18 +25,11 @@ interface EditionData {
   articles: Record<string, Article[]>;
 }
 
-const CATEGORY_ICONS: Record<string, string> = {
-  Tech: "~",
-  Product: "#",
-  Business: "$",
-  Design: "*",
-  Other: "+",
-};
-
 export default function NewspaperPage() {
   const params = useParams();
   const [data, setData] = useState<EditionData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
 
   useEffect(() => {
     fetch(`/api/editions/${params.id}`)
@@ -43,15 +42,23 @@ export default function NewspaperPage() {
 
   if (loading || !data) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-500">Loading your edition...</p>
+      <div className="flex h-[calc(100vh-64px)]">
+        <div className="w-96 border-r p-4 space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 w-full rounded-xl" />
+          ))}
+        </div>
+        <div className="flex-1 p-6">
+          <Skeleton className="h-8 w-64 mb-4" />
+          <Skeleton className="h-4 w-full mb-2" />
+          <Skeleton className="h-4 w-3/4" />
+        </div>
       </div>
     );
   }
 
   const date = new Date(data.edition.generatedAt).toLocaleDateString("en-US", {
     weekday: "long",
-    year: "numeric",
     month: "long",
     day: "numeric",
   });
@@ -59,31 +66,70 @@ export default function NewspaperPage() {
   const totalArticles = Object.values(data.articles).flat().length;
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      {/* Newspaper header */}
-      <header className="text-center border-b-4 border-double border-gray-900 pb-4 mb-2">
-        <h1 className="text-4xl font-serif font-bold tracking-tight text-gray-900">
-          nl-dygest
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">{date}</p>
-        <p className="text-xs text-gray-400">
-          Edition #{data.edition.id} &middot; {totalArticles} articles
-        </p>
-      </header>
+    <div className="flex h-[calc(100vh-64px)]">
+      {/* Left panel — article list */}
+      <div className="w-96 border-r border-slate-200 bg-white hidden md:block">
+        <div className="p-4 border-b border-slate-200">
+          <h1 className="text-lg font-bold text-slate-900">
+            Edition #{data.edition.id}
+          </h1>
+          <p className="text-xs text-slate-400">
+            {date} &middot; {totalArticles} articles
+          </p>
+        </div>
+        <ArticleList
+          articles={data.articles}
+          selectedId={selectedArticle?.id || null}
+          onSelect={setSelectedArticle}
+        />
+      </div>
 
-      <StatsBar streak={1} readThisWeek={totalArticles} remaining={0} />
+      {/* Mobile list (when no article selected) */}
+      <div className="md:hidden flex-1">
+        {!selectedArticle && (
+          <>
+            <div className="p-4 border-b border-slate-200">
+              <h1 className="text-lg font-bold text-slate-900">
+                Edition #{data.edition.id}
+              </h1>
+              <p className="text-xs text-slate-400">
+                {date} &middot; {totalArticles} articles
+              </p>
+            </div>
+            <ArticleList
+              articles={data.articles}
+              selectedId={null}
+              onSelect={setSelectedArticle}
+            />
+          </>
+        )}
+      </div>
 
-      {/* Articles by category */}
-      {Object.entries(data.articles).map(([category, articles]) => (
-        <section key={category} className="mb-8">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 border-b border-gray-200 pb-1 mb-3">
-            {CATEGORY_ICONS[category] || "+"} {category}
-          </h2>
-          {articles.map((article) => (
-            <ArticleCard key={article.id} article={article} />
-          ))}
-        </section>
-      ))}
+      {/* Right panel — reading pane (desktop) */}
+      <div className="flex-1 bg-white hidden md:block">
+        {selectedArticle ? (
+          <ReadingPane
+            article={selectedArticle}
+            onClose={() => setSelectedArticle(null)}
+          />
+        ) : (
+          <div className="h-full flex items-center justify-center text-slate-400">
+            <p>Select an article to read</p>
+          </div>
+        )}
+      </div>
+
+      {/* Mobile reading pane (sheet) */}
+      <Sheet open={!!selectedArticle} onOpenChange={() => setSelectedArticle(null)}>
+        <SheetContent side="bottom" className="h-[90vh] md:hidden p-0">
+          {selectedArticle && (
+            <ReadingPane
+              article={selectedArticle}
+              onClose={() => setSelectedArticle(null)}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
