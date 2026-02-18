@@ -61,6 +61,12 @@ export default function TriagePage() {
     const res = await fetch("/api/editions", { method: "POST" });
     const data = await res.json();
     if (data.editionId) {
+      // Mark onboarding as complete
+      await fetch("/api/preferences", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ onboardingCompleted: true }),
+      });
       router.push(`/read/${data.editionId}`);
     }
   };
