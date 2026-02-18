@@ -1,7 +1,16 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { Button } from "@/components/ui/button";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get("nl-dygest-session")?.value;
+
+  if (sessionToken) {
+    redirect("/read");
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex flex-col items-center justify-center p-4">
       <div className="max-w-md w-full text-center space-y-8">
