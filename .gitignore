@@ -43,5 +43,7 @@ next-env.d.ts
 
 # database
 *.db
+*.db-wal
+*.db-shm
 .gmail-tokens.json
 .worktrees/
