@@ -16,7 +16,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Check session cookie
-  const sessionToken = request.cookies.get("nl-dygest-session")?.value;
+  const sessionToken = request.cookies.get("briefflow-session")?.value;
   if (!sessionToken) {
     return NextResponse.redirect(new URL("/", request.url));
   }

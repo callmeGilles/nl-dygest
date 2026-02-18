@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { db } from "@/db";
 import { getSession, getOAuthTokens, getPreferences } from "@/lib/session";
 
-const SESSION_COOKIE = "nl-dygest-session";
+const SESSION_COOKIE = "briefflow-session";
 
 export async function getAuthenticatedSession() {
   const cookieStore = await cookies();

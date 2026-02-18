@@ -1,4 +1,4 @@
-# nl-dygest Implementation Plan
+# briefflow Implementation Plan
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
@@ -261,7 +261,7 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import * as schema from "./schema";
 import path from "path";
 
-const DB_PATH = process.env.DATABASE_URL || path.join(process.cwd(), "nl-dygest.db");
+const DB_PATH = process.env.DATABASE_URL || path.join(process.cwd(), "briefflow.db");
 
 const sqlite = new Database(DB_PATH);
 sqlite.pragma("journal_mode = WAL");
@@ -281,7 +281,7 @@ export default defineConfig({
   out: "./drizzle",
   dialect: "sqlite",
   dbCredentials: {
-    url: "./nl-dygest.db",
+    url: "./briefflow.db",
   },
 });
 ```
@@ -888,7 +888,7 @@ export async function POST(request: NextRequest) {
     if (decision === "skipped") {
       await markAsRead(newsletter.gmailId);
     } else {
-      await addLabel(newsletter.gmailId, "nl-dygest/kept");
+      await addLabel(newsletter.gmailId, "briefflow/kept");
     }
   }
 
@@ -1416,7 +1416,7 @@ export default function NewspaperPage() {
       {/* Newspaper header */}
       <header className="text-center border-b-4 border-double border-gray-900 pb-4 mb-2">
         <h1 className="text-4xl font-serif font-bold tracking-tight text-gray-900">
-          nl-dygest
+          briefflow
         </h1>
         <p className="text-sm text-gray-500 mt-1">{date}</p>
         <p className="text-xs text-gray-400">
@@ -1629,7 +1629,7 @@ import Link from "next/link";
 export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-      <h1 className="text-5xl font-serif font-bold text-gray-900 mb-2">nl-dygest</h1>
+      <h1 className="text-5xl font-serif font-bold text-gray-900 mb-2">briefflow</h1>
       <p className="text-gray-500 mb-8">Your daily newsletter companion</p>
 
       <div className="flex flex-col gap-3 w-full max-w-xs">
@@ -1666,7 +1666,7 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "nl-dygest",
+  title: "briefflow",
   description: "Your daily newsletter companion",
 };
 
@@ -1680,7 +1680,7 @@ export default function RootLayout({
       <body>
         <nav className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
           <Link href="/" className="font-serif font-bold text-lg text-gray-900">
-            nl-dygest
+            briefflow
           </Link>
           <div className="flex gap-4 text-sm">
             <Link href="/triage" className="text-gray-600 hover:text-gray-900">
@@ -1722,7 +1722,7 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import path from "path";
 
-const DB_PATH = process.env.DATABASE_URL || path.join(process.cwd(), "nl-dygest.db");
+const DB_PATH = process.env.DATABASE_URL || path.join(process.cwd(), "briefflow.db");
 const sqlite = new Database(DB_PATH);
 const db = drizzle(sqlite);
 

@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       if (decision === "skipped") {
         await markAsRead(newsletter.gmailId, auth.tokens.accessToken, auth.tokens.refreshToken);
       } else {
-        await addLabel(newsletter.gmailId, "nl-dygest/kept", auth.tokens.accessToken, auth.tokens.refreshToken);
+        await addLabel(newsletter.gmailId, "briefflow/kept", auth.tokens.accessToken, auth.tokens.refreshToken);
       }
     }
   }

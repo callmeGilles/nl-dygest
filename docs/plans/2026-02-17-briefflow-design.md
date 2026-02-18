@@ -1,4 +1,4 @@
-# nl-dygest — Design Document
+# briefflow — Design Document
 
 **Date:** 2026-02-17
 **Status:** Approved
@@ -99,7 +99,7 @@ Gmail (OAuth) → Next.js API Routes → Claude API → Next.js Frontend
 - **Source:** Configurable Gmail label/folder (e.g., "Newsletters")
 - **After triage:**
   - Skipped → marked as read in Gmail
-  - Kept → labeled `nl-dygest/kept`
+  - Kept → labeled `briefflow/kept`
 - **After reading:** Optionally mark as read
 
 ## LLM Processing Pipeline

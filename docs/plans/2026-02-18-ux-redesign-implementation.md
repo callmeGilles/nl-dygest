@@ -346,7 +346,7 @@ import { cookies } from "next/headers";
 import { db } from "@/db";
 import { getSession, getOAuthTokens, getPreferences } from "@/lib/session";
 
-const SESSION_COOKIE = "nl-dygest-session";
+const SESSION_COOKIE = "briefflow-session";
 
 export async function getAuthenticatedSession() {
   const cookieStore = await cookies();
@@ -598,7 +598,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Check session cookie
-  const sessionToken = request.cookies.get("nl-dygest-session")?.value;
+  const sessionToken = request.cookies.get("briefflow-session")?.value;
   if (!sessionToken) {
     return NextResponse.redirect(new URL("/", request.url));
   }
@@ -644,7 +644,7 @@ export default function LandingPage() {
       <div className="max-w-md w-full text-center space-y-8">
         <div className="space-y-2">
           <h1 className="text-5xl font-bold tracking-tight text-slate-900">
-            nl-dygest
+            briefflow
           </h1>
           <p className="text-lg text-slate-500">
             Your daily newsletter companion
@@ -803,7 +803,7 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex flex-col items-center justify-center p-4">
       <div className="max-w-lg w-full space-y-8">
         <div className="text-center space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">nl-dygest</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">briefflow</h1>
           <p className="text-sm text-slate-500">Set up your newsletter digest</p>
         </div>
         {children}
@@ -1016,7 +1016,7 @@ export function NavBar() {
   return (
     <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-3 border-b border-slate-200 bg-white/80 backdrop-blur-sm">
       <Link href="/" className="font-bold text-lg text-slate-900 tracking-tight">
-        nl-dygest
+        briefflow
       </Link>
       <div className="flex items-center gap-1">
         {NAV_ITEMS.map((item) => (
@@ -1051,7 +1051,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "nl-dygest",
+  title: "briefflow",
   description: "Your daily newsletter companion",
 };
 
@@ -1975,7 +1975,7 @@ import { Button } from "@/components/ui/button";
 
 export default async function LandingPage() {
   const cookieStore = await cookies();
-  const sessionToken = cookieStore.get("nl-dygest-session")?.value;
+  const sessionToken = cookieStore.get("briefflow-session")?.value;
 
   if (sessionToken) {
     // Authenticated user — redirect to dygest

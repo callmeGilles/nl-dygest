@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 export default async function LandingPage() {
   const cookieStore = await cookies();
-  const sessionToken = cookieStore.get("nl-dygest-session")?.value;
+  const sessionToken = cookieStore.get("briefflow-session")?.value;
 
   if (sessionToken) {
     redirect("/read");
@@ -16,7 +16,7 @@ export default async function LandingPage() {
       <div className="max-w-md w-full text-center space-y-8">
         <div className="space-y-2">
           <h1 className="text-5xl font-bold tracking-tight text-slate-900">
-            nl-dygest
+            briefflow
           </h1>
           <p className="text-lg text-slate-500">
             Your daily newsletter companion

@@ -1,4 +1,4 @@
-# nl-dygest UX Redesign Design
+# briefflow UX Redesign Design
 
 **Date:** 2026-02-18
 **Status:** Approved
@@ -75,7 +75,7 @@ user_preferences:
 Route: `/onboarding` — shown only once after first login.
 
 ### Step 1: Welcome + Google SSO
-- Clean centered layout with nl-dygest logo
+- Clean centered layout with briefflow logo
 - "Connect your Gmail to get started" with Google sign-in button
 - On successful auth → auto-advance to step 2
 
@@ -106,7 +106,7 @@ Two-panel layout. Email-client pattern with Airbnb visual polish.
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│  nl-dygest          Edition #3 · Feb 18    [⚙] [👤] │
+│  briefflow          Edition #3 · Feb 18    [⚙] [👤] │
 ├────────────────────────┬─────────────────────────────┤
 │                        │                             │
 │  ┌──────────────────┐  │   Newsletter full content   │

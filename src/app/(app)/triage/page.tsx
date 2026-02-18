@@ -144,7 +144,7 @@ export default function TriagePage() {
             onClick={handleGenerate}
             className="rounded-xl h-12 px-8 text-base"
           >
-            Generate my dygest
+            Generate my briefflow
           </Button>
         </div>
       )}

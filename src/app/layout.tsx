@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "nl-dygest",
+  title: "briefflow",
   description: "Your daily newsletter companion",
 };
 

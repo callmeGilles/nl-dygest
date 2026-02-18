@@ -21,7 +21,7 @@ export function NavBar() {
   return (
     <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-3 border-b border-slate-200 bg-white/80 backdrop-blur-sm">
       <Link href="/" className="font-bold text-lg text-slate-900 tracking-tight">
-        nl-dygest
+        briefflow
       </Link>
       <div className="flex items-center gap-1">
         {NAV_ITEMS.map((item) => (

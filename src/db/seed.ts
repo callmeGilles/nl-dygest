@@ -4,7 +4,7 @@ import * as schema from "./schema";
 import path from "path";
 
 async function seed() {
-  const DB_PATH = process.env.DATABASE_URL || path.join(process.cwd(), "nl-dygest.db");
+  const DB_PATH = process.env.DATABASE_URL || path.join(process.cwd(), "briefflow.db");
   const sqlite = new Database(DB_PATH);
   const db = drizzle(sqlite, { schema });
 
