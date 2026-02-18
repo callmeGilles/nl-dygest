@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/db";
 import { markAsRead, addLabel } from "@/lib/newsletters";
+import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import { eq } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
@@ -17,16 +18,19 @@ export async function POST(request: NextRequest) {
     triagedAt: new Date().toISOString(),
   });
 
-  // Sync with Gmail
-  const newsletter = await db.query.newsletters.findFirst({
-    where: eq(schema.newsletters.id, newsletterId),
-  });
+  // Sync with Gmail if authenticated
+  const auth = await getAuthenticatedSession();
+  if (auth?.tokens) {
+    const newsletter = await db.query.newsletters.findFirst({
+      where: eq(schema.newsletters.id, newsletterId),
+    });
 
-  if (newsletter) {
-    if (decision === "skipped") {
-      await markAsRead(newsletter.gmailId);
-    } else {
-      await addLabel(newsletter.gmailId, "nl-dygest/kept");
+    if (newsletter) {
+      if (decision === "skipped") {
+        await markAsRead(newsletter.gmailId, auth.tokens.accessToken, auth.tokens.refreshToken);
+      } else {
+        await addLabel(newsletter.gmailId, "nl-dygest/kept", auth.tokens.accessToken, auth.tokens.refreshToken);
+      }
     }
   }
 

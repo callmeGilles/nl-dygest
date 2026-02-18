@@ -1,14 +1,20 @@
 import { NextResponse } from "next/server";
 import { db, schema } from "@/db";
 import { fetchNewsletters } from "@/lib/newsletters";
-import { isAuthenticated } from "@/lib/gmail";
+import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import { notInArray } from "drizzle-orm";
 
 export async function GET() {
-  // If authenticated, sync from Gmail first
-  if (isAuthenticated()) {
-    const label = process.env.GMAIL_LABEL || "Newsletters";
-    const gmailNewsletters = await fetchNewsletters(label);
+  const auth = await getAuthenticatedSession();
+
+  if (auth?.tokens) {
+    const label = auth.preferences?.gmailLabel || "Newsletters";
+    const gmailNewsletters = await fetchNewsletters(
+      label,
+      20,
+      auth.tokens.accessToken,
+      auth.tokens.refreshToken
+    );
 
     for (const nl of gmailNewsletters) {
       const existing = await db.query.newsletters.findFirst({

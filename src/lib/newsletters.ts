@@ -40,8 +40,13 @@ export function parseGmailMessage(message: any): ParsedNewsletter {
   };
 }
 
-export async function fetchNewsletters(label: string, maxResults = 20): Promise<ParsedNewsletter[]> {
-  const gmail = getGmailClient();
+export async function fetchNewsletters(
+  label: string,
+  maxResults = 20,
+  accessToken: string,
+  refreshToken?: string | null
+): Promise<ParsedNewsletter[]> {
+  const gmail = getGmailClient(accessToken, refreshToken);
 
   // Find label ID
   const labels = await gmail.users.labels.list({ userId: "me" });
@@ -79,8 +84,8 @@ export async function fetchNewsletters(label: string, maxResults = 20): Promise<
   return messages.map((m) => parseGmailMessage(m.data));
 }
 
-export async function markAsRead(gmailId: string) {
-  const gmail = getGmailClient();
+export async function markAsRead(gmailId: string, accessToken: string, refreshToken?: string | null) {
+  const gmail = getGmailClient(accessToken, refreshToken);
   await gmail.users.messages.modify({
     userId: "me",
     id: gmailId,
@@ -88,8 +93,8 @@ export async function markAsRead(gmailId: string) {
   });
 }
 
-export async function addLabel(gmailId: string, labelName: string) {
-  const gmail = getGmailClient();
+export async function addLabel(gmailId: string, labelName: string, accessToken: string, refreshToken?: string | null) {
+  const gmail = getGmailClient(accessToken, refreshToken);
 
   // Ensure label exists, create if not
   const labels = await gmail.users.labels.list({ userId: "me" });
