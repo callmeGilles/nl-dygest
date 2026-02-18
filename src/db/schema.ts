@@ -39,6 +39,32 @@ export const editionArticles = sqliteTable("edition_articles", {
   readingTime: integer("reading_time").notNull(),
 });
 
+export const sessions = sqliteTable("sessions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  token: text("token").notNull().unique(),
+  createdAt: text("created_at").notNull(),
+  expiresAt: text("expires_at").notNull(),
+});
+
+export const userTokens = sqliteTable("user_tokens", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  sessionId: integer("session_id")
+    .notNull()
+    .references(() => sessions.id),
+  accessToken: text("access_token").notNull(),
+  refreshToken: text("refresh_token"),
+  expiresAt: text("expires_at"),
+});
+
+export const userPreferences = sqliteTable("user_preferences", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  sessionId: integer("session_id")
+    .notNull()
+    .references(() => sessions.id),
+  gmailLabel: text("gmail_label").default("Newsletters"),
+  onboardingCompleted: integer("onboarding_completed").default(0),
+});
+
 export const readingSessions = sqliteTable("reading_sessions", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   date: text("date").notNull(),
