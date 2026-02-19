@@ -2,6 +2,8 @@ import { Readability } from "@mozilla/readability";
 import { JSDOM } from "jsdom";
 import { GoogleGenAI } from "@google/genai";
 
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+
 export function extractReadableContent(html: string): string {
   const dom = new JSDOM(html, { url: "https://example.com" });
   const reader = new Readability(dom.window.document);
@@ -36,8 +38,6 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 export async function summarizeNewsletter(html: string): Promise<ArticleSummary> {
   const content = extractReadableContent(html);
   const prompt = buildSummarizationPrompt(content);
-
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
   const maxRetries = 3;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
