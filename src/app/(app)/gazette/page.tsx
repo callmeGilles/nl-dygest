@@ -127,15 +127,15 @@ export default function GazettePage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       <GazetteHeader pastEditions={editions} />
 
       <div className="max-w-xl mx-auto px-4 pb-12">
         {/* Date banner */}
         <div className="text-center py-8">
-          <h1 className="text-xl font-semibold text-slate-900">{today}</h1>
+          <h1 className="text-xl font-semibold text-foreground">{today}</h1>
           {articles.length > 0 && (
-            <p className="text-sm text-slate-400 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               {articles.length} article{articles.length !== 1 ? "s" : ""} from
               your newsletters
             </p>
@@ -157,8 +157,8 @@ export default function GazettePage() {
         {/* Error state */}
         {error && (
           <div className="text-center py-12">
-            <p className="text-sm text-slate-500">{error}</p>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-sm text-muted-foreground">{error}</p>
+            <p className="text-xs text-muted-foreground mt-1">
               Check back later when new newsletters arrive.
             </p>
           </div>
