@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 
   const preferences = await getPreferences(db, session.id);
   const redirectUrl = preferences?.onboardingCompleted
-    ? "/triage"
+    ? "/gazette"
     : "/onboarding/label";
 
   const response = NextResponse.redirect(new URL(redirectUrl, request.url));
