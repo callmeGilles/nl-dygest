@@ -42,12 +42,12 @@ export function LabelPicker() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ gmailLabel: selected }),
     });
-    router.push("/triage");
+    router.push("/gazette");
   };
 
   return (
     <div className="space-y-6">
-      <OnboardingStepper currentStep={1} steps={["Connect", "Select", "Triage"]} />
+      <OnboardingStepper currentStep={1} steps={["Connect", "Select", "Read"]} />
 
       <div className="text-center">
         <h2 className="text-xl font-semibold text-slate-900">Choose your newsletter folder</h2>

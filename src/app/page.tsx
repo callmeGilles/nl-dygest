@@ -8,7 +8,7 @@ export default async function LandingPage() {
   const sessionToken = cookieStore.get("briefflow-session")?.value;
 
   if (sessionToken) {
-    redirect("/read");
+    redirect("/gazette");
   }
 
   return (
@@ -25,7 +25,7 @@ export default async function LandingPage() {
 
         <div className="space-y-4 pt-4">
           <p className="text-sm text-slate-600 max-w-xs mx-auto">
-            Triage your newsletters with a swipe. Read the digest, not the noise.
+            Your daily newsletter digest, curated and summarized. Zero effort.
           </p>
 
           <Button asChild size="lg" className="w-full max-w-xs rounded-xl h-12 text-base">

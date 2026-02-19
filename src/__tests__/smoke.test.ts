@@ -7,7 +7,7 @@ import { parseGmailMessage } from "../lib/newsletters";
 
 describe("End-to-end smoke test", () => {
   let sqlite: Database.Database;
-  let db: ReturnType<typeof drizzle>;
+  let db: ReturnType<typeof drizzle<typeof schema>>;
 
   beforeEach(() => {
     sqlite = new Database(":memory:");
@@ -55,7 +55,7 @@ describe("End-to-end smoke test", () => {
     sqlite.close();
   });
 
-  it("should complete a full triage-to-edition flow (DB only)", async () => {
+  it("should complete a gazette generation flow (DB only)", async () => {
     // 1. Insert newsletters
     const [nl1] = await db.insert(schema.newsletters).values({
       gmailId: "smoke_001",
@@ -66,27 +66,12 @@ describe("End-to-end smoke test", () => {
       rawHtml: "<h1>Onboarding</h1><p>Content here</p>",
     }).returning();
 
-    const [nl2] = await db.insert(schema.newsletters).values({
-      gmailId: "smoke_002",
-      sender: "TLDR <tldr@newsletter.com>",
-      subject: "TLDR Daily - Feb 17",
-      snippet: "Top stories in tech today...",
-      receivedAt: new Date().toISOString(),
-      rawHtml: "<h1>TLDR</h1><p>Stories</p>",
-    }).returning();
-
-    // 2. Triage: keep nl1, skip nl2
-    await db.insert(schema.triageDecisions).values([
-      { newsletterId: nl1.id, decision: "kept", triagedAt: new Date().toISOString() },
-      { newsletterId: nl2.id, decision: "skipped", triagedAt: new Date().toISOString() },
-    ]);
-
-    // 3. Create edition
+    // 2. Create edition (gazette)
     const [edition] = await db.insert(schema.editions).values({
       generatedAt: new Date().toISOString(),
     }).returning();
 
-    // 4. Add article (simulating LLM output)
+    // 3. Add article (simulating Gemini summarization)
     await db.insert(schema.editionArticles).values({
       editionId: edition.id,
       newsletterId: nl1.id,
@@ -97,14 +82,10 @@ describe("End-to-end smoke test", () => {
       readingTime: 6,
     });
 
-    // 5. Verify
+    // 4. Verify
     const articles = await db.query.editionArticles.findMany();
     expect(articles).toHaveLength(1);
     expect(articles[0].category).toBe("Product");
-
-    const decisions = await db.query.triageDecisions.findMany();
-    expect(decisions).toHaveLength(2);
-    expect(decisions.filter((d) => d.decision === "kept")).toHaveLength(1);
   });
 
   it("should parse Gmail messages correctly", () => {
