@@ -2,6 +2,12 @@ import { Readability } from "@mozilla/readability";
 import { JSDOM } from "jsdom";
 import { GoogleGenAI } from "@google/genai";
 
+let _ai: GoogleGenAI | null = null;
+function getAI() {
+  if (!_ai) _ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+  return _ai;
+}
+
 export function extractReadableContent(html: string): string {
   const dom = new JSDOM(html, { url: "https://example.com" });
   const reader = new Readability(dom.window.document);
@@ -37,12 +43,10 @@ export async function summarizeNewsletter(html: string): Promise<ArticleSummary>
   const content = extractReadableContent(html);
   const prompt = buildSummarizationPrompt(content);
 
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-
   const maxRetries = 3;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      const response = await ai.models.generateContent({
+      const response = await getAI().models.generateContent({
         model: "gemini-3-flash-preview",
         contents: prompt,
         config: {
