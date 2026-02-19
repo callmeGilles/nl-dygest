@@ -13,10 +13,10 @@ export function GazetteLoading({ current, total }: GazetteLoadingProps) {
   return (
     <div className="text-center space-y-4 py-8">
       <div className="space-y-1">
-        <p className="text-sm font-medium text-slate-700">
+        <p className="text-sm font-medium text-foreground">
           Preparing your gazette
         </p>
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-muted-foreground">
           {current} of {total} articles ready
         </p>
       </div>
