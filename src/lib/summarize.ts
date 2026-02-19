@@ -43,7 +43,7 @@ export async function summarizeNewsletter(html: string): Promise<ArticleSummary>
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: "gemini-3-flash-preview",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -53,9 +53,13 @@ export async function summarizeNewsletter(html: string): Promise<ArticleSummary>
       const text = response.text ?? "";
       return JSON.parse(text) as ArticleSummary;
     } catch (err: unknown) {
-      const isRateLimit =
-        err instanceof Error && (err.message.includes("429") || err.message.includes("RESOURCE_EXHAUSTED"));
-      if (isRateLimit && attempt < maxRetries) {
+      const isRetryable =
+        err instanceof Error &&
+        (err.message.includes("429") ||
+          err.message.includes("RESOURCE_EXHAUSTED") ||
+          err.message.includes("503") ||
+          err.message.includes("UNAVAILABLE"));
+      if (isRetryable && attempt < maxRetries) {
         const delay = (attempt + 1) * 10_000; // 10s, 20s, 30s
         console.log(`Rate limited, retrying in ${delay / 1000}s...`);
         await sleep(delay);
