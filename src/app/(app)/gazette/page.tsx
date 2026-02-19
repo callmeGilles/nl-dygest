@@ -35,13 +35,22 @@ export default function GazettePage() {
   const [error, setError] = useState<string | null>(null);
   const initialized = useRef(false);
 
+  const markOnboardingComplete = useCallback(() => {
+    fetch("/api/preferences", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ onboardingCompleted: true }),
+    });
+  }, []);
+
   const loadReadyGazette = useCallback(async (editionId: number) => {
     const res = await fetch(`/api/editions/${editionId}`);
     const data = await res.json();
     const allArticles = Object.values(data.articles as Record<string, Article[]>).flat();
     setArticles(allArticles);
     setLoading(false);
-  }, []);
+    markOnboardingComplete();
+  }, [markOnboardingComplete]);
 
   const streamGazette = useCallback(
     (editionId: number, newsletterIds: number[], total: number) => {
@@ -63,6 +72,7 @@ export default function GazettePage() {
 
         if (data.type === "complete") {
           setGenerating(false);
+          markOnboardingComplete();
           eventSource.close();
         }
 
@@ -76,7 +86,7 @@ export default function GazettePage() {
         eventSource.close();
       };
     },
-    []
+    [markOnboardingComplete]
   );
 
   useEffect(() => {
