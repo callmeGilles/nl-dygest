@@ -75,7 +75,7 @@ export async function getPreferences(db: DbInstance, sessionId: number) {
 export async function updatePreferences(
   db: DbInstance,
   sessionId: number,
-  updates: { gmailLabel?: string; onboardingCompleted?: number }
+  updates: { gmailLabel?: string; gmailLabels?: string; onboardingCompleted?: number }
 ) {
   await db.update(schema.userPreferences)
     .set(updates)

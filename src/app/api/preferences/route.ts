@@ -10,9 +10,12 @@ export async function PATCH(request: NextRequest) {
   }
 
   const body = await request.json();
-  const updates: { gmailLabel?: string; onboardingCompleted?: number } = {};
+  const updates: { gmailLabel?: string; gmailLabels?: string; onboardingCompleted?: number } = {};
 
   if (body.gmailLabel) updates.gmailLabel = body.gmailLabel;
+  if (body.gmailLabels) {
+    updates.gmailLabels = JSON.stringify(body.gmailLabels);
+  }
   if (body.onboardingCompleted !== undefined) {
     updates.onboardingCompleted = body.onboardingCompleted ? 1 : 0;
   }
