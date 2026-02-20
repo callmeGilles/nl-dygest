@@ -10,9 +10,33 @@
 
 **Design doc:** `docs/plans/2026-02-20-gazette-evolution-design.md`
 
+**Worktree:** `.worktrees/gazette-evolution` (branch `feature/gazette-evolution`)
+
+### Progress
+
+| Task | Description | Status |
+|------|------------|--------|
+| 1 | Schema: `userInterests` + `editionArticles` columns | DONE |
+| 2 | Schema: `userPreferences` multi-label | DONE |
+| 3 | API: interests CRUD | DONE |
+| 4 | API: preferences multi-label | DONE |
+| 5 | Gazette generator (Gemini editor call) | DONE |
+| 6 | Rewrite gazette API route | DONE |
+| 7 | Onboarding: multi-label picker | DONE |
+| 8 | Onboarding: interest picker | DONE |
+| 9 | UI: HeadlineCard | DONE |
+| 10 | UI: HookCard | DONE |
+| 11 | UI: BriefItem | DONE |
+| 12 | UI: GazetteFooter | DONE |
+| 13 | UI: Rewrite gazette page | DONE |
+| 14 | Visual warmth pass | DONE |
+| 15 | Cleanup and verify | DONE |
+
+**All 23 tests passing. All 15 tasks complete.**
+
 ---
 
-### Task 1: Schema — Add `userInterests` table and update `editionArticles`
+### Task 1: Schema — Add `userInterests` table and update `editionArticles` ✅
 
 **Files:**
 - Modify: `src/db/schema.ts`
@@ -93,7 +117,7 @@ git commit -m "feat: add userInterests table and gazette section columns"
 
 ---
 
-### Task 2: Schema — Update `userPreferences` for multi-label support
+### Task 2: Schema — Update `userPreferences` for multi-label support ✅
 
 **Files:**
 - Modify: `src/db/schema.ts`
@@ -122,7 +146,7 @@ git commit -m "feat: multi-label support in userPreferences"
 
 ---
 
-### Task 3: API — Interests CRUD endpoint
+### Task 3: API — Interests CRUD endpoint ✅
 
 **Files:**
 - Create: `src/app/api/interests/route.ts`
@@ -222,7 +246,7 @@ git commit -m "feat: interests CRUD API endpoint"
 
 ---
 
-### Task 4: API — Update preferences endpoint for multi-label
+### Task 4: API — Update preferences endpoint for multi-label ✅
 
 **Files:**
 - Modify: `src/app/api/preferences/route.ts`
@@ -263,7 +287,7 @@ git commit -m "feat: multi-label preferences support"
 
 ---
 
-### Task 5: Gazette generation — Single Gemini "editor" call
+### Task 5: Gazette generation — Single Gemini "editor" call ✅
 
 **Files:**
 - Create: `src/lib/gazette-generator.ts`
@@ -1029,7 +1053,7 @@ git commit -m "feat: interest picker onboarding screen"
 
 ---
 
-### Task 9: UI — HeadlineCard component
+### Task 9: UI — HeadlineCard component ✅
 
 **Files:**
 - Create: `src/components/headline-card.tsx`
