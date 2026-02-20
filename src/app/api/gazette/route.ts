@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { db, schema } from "@/db";
+import { eq } from "drizzle-orm";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
-import { fetchNewsletters, selectRandomNewsletters } from "@/lib/newsletters";
+import { fetchNewsletters } from "@/lib/newsletters";
+import {
+  generateGazette,
+  prepareCandidates,
+} from "@/lib/gazette-generator";
 
 export async function POST() {
   try {
@@ -11,7 +16,7 @@ export async function POST() {
     }
 
     // Check if gazette already exists for today
-    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    const today = new Date().toISOString().split("T")[0];
     const existingEditions = await db.query.editions.findMany({
       orderBy: (editions, { desc }) => [desc(editions.generatedAt)],
     });
@@ -26,19 +31,43 @@ export async function POST() {
       });
     }
 
-    // Fetch unread newsletters from Gmail
-    const label = auth.preferences?.gmailLabel || "Newsletters";
-    const gmailNewsletters = await fetchNewsletters(
-      label,
-      50, // fetch more to have a good pool
-      auth.tokens.accessToken,
-      auth.tokens.refreshToken
-    );
+    // Get user's labels (multi-label support)
+    const prefs = auth.preferences;
+    let labels: string[] = ["Newsletters"];
+    if (prefs?.gmailLabels) {
+      try {
+        labels = JSON.parse(prefs.gmailLabels);
+      } catch {
+        labels = [prefs.gmailLabel || "Newsletters"];
+      }
+    } else if (prefs?.gmailLabel) {
+      labels = [prefs.gmailLabel];
+    }
+
+    // Fetch newsletters from all selected labels
+    const allGmailNewsletters = [];
+    for (const label of labels) {
+      const newsletters = await fetchNewsletters(
+        label,
+        50,
+        auth.tokens.accessToken,
+        auth.tokens.refreshToken
+      );
+      allGmailNewsletters.push(...newsletters);
+    }
+
+    // Deduplicate by gmailId
+    const seen = new Set<string>();
+    const uniqueNewsletters = allGmailNewsletters.filter((nl) => {
+      if (seen.has(nl.gmailId)) return false;
+      seen.add(nl.gmailId);
+      return true;
+    });
 
     // Store new newsletters in DB
-    for (const nl of gmailNewsletters) {
+    for (const nl of uniqueNewsletters) {
       const existing = await db.query.newsletters.findFirst({
-        where: (newsletters, { eq }) => eq(newsletters.gmailId, nl.gmailId),
+        where: eq(schema.newsletters.gmailId, nl.gmailId),
       });
       if (!existing) {
         await db.insert(schema.newsletters).values(nl);
@@ -49,7 +78,9 @@ export async function POST() {
     const existingArticles = await db.query.editionArticles.findMany();
     const processedNlIds = new Set(existingArticles.map((a) => a.newsletterId));
 
-    const allNewsletters = await db.query.newsletters.findMany();
+    const allNewsletters = await db.query.newsletters.findMany({
+      orderBy: (newsletters, { desc }) => [desc(newsletters.receivedAt)],
+    });
     const available = allNewsletters.filter((nl) => !processedNlIds.has(nl.id));
 
     if (available.length === 0) {
@@ -59,8 +90,18 @@ export async function POST() {
       );
     }
 
-    // Pick 5-10 random newsletters
-    const selected = selectRandomNewsletters(available, 5, 10);
+    // Get user interests
+    const interests = await db.query.userInterests.findMany({
+      where: eq(schema.userInterests.sessionId, auth.session.id),
+    });
+    const interestTopics = interests.map((i) => i.topic);
+
+    // Prepare candidates and generate gazette
+    const candidates = prepareCandidates(available);
+    const gazette = await generateGazette(
+      candidates,
+      interestTopics.length > 0 ? interestTopics : ["General"]
+    );
 
     // Create edition
     const [edition] = await db
@@ -68,11 +109,72 @@ export async function POST() {
       .values({ generatedAt: new Date().toISOString() })
       .returning();
 
+    // Store gazette articles
+    const storeArticle = async (
+      newsletterId: number,
+      section: string,
+      position: number,
+      headline: string,
+      summary: string,
+      keyPoints: string[],
+      expandedSummary: string | null
+    ) => {
+      await db.insert(schema.editionArticles).values({
+        editionId: edition.id,
+        newsletterId,
+        category: section === "headline" ? "Featured" : "General",
+        section,
+        position,
+        headline,
+        summary,
+        keyPoints: JSON.stringify(keyPoints),
+        expandedSummary,
+        readingTime: 0,
+      });
+    };
+
+    // Store headline
+    await storeArticle(
+      gazette.headline.newsletterId,
+      "headline",
+      0,
+      gazette.headline.title,
+      gazette.headline.summary,
+      gazette.headline.takeaways,
+      null
+    );
+
+    // Store worth your time
+    for (let i = 0; i < gazette.worthYourTime.length; i++) {
+      const item = gazette.worthYourTime[i];
+      await storeArticle(
+        item.newsletterId,
+        "worth_your_time",
+        i,
+        item.hook,
+        item.hook,
+        item.takeaways,
+        item.expandedSummary
+      );
+    }
+
+    // Store in brief
+    for (let i = 0; i < gazette.inBrief.length; i++) {
+      const item = gazette.inBrief[i];
+      await storeArticle(
+        item.newsletterId,
+        "in_brief",
+        i,
+        item.oneLiner,
+        item.oneLiner,
+        [],
+        item.expandedSummary
+      );
+    }
+
     return NextResponse.json({
       editionId: edition.id,
-      status: "generating",
-      total: selected.length,
-      newsletterIds: selected.map((nl) => nl.id),
+      status: "ready",
     });
   } catch (error) {
     console.error("Gazette generation failed:", error);

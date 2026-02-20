@@ -36,11 +36,17 @@ export async function GET(
     })
   );
 
-  // Group by category
+  // Group by section instead of category
   const grouped: Record<string, typeof articlesWithContent> = {};
   for (const article of articlesWithContent) {
-    if (!grouped[article.category]) grouped[article.category] = [];
-    grouped[article.category].push(article);
+    const section = article.section || "in_brief";
+    if (!grouped[section]) grouped[section] = [];
+    grouped[section].push(article);
+  }
+
+  // Sort within each section by position
+  for (const section of Object.values(grouped)) {
+    section.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
   }
 
   return NextResponse.json({ edition, articles: grouped });
