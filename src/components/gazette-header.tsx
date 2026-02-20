@@ -27,7 +27,7 @@ export function GazetteHeader({ pastEditions = [] }: GazetteHeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 bg-card/80 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 bg-amber-50/80 backdrop-blur-sm border-b border-amber-100/40">
       <Link
         href="/gazette"
         className="font-semibold text-base text-foreground tracking-tight"
