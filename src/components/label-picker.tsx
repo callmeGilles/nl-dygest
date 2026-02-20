@@ -33,7 +33,7 @@ export function LabelPicker({ mode = "onboarding", onSaved }: LabelPickerProps) 
         ? fetch("/api/preferences").then((r) => r.json())
         : Promise.resolve(null),
     ]).then(([labelsData, prefs]) => {
-      setLabels(labelsData);
+      setLabels(Array.isArray(labelsData) ? labelsData : []);
       if (prefs?.gmailLabels) {
         try {
           const savedLabels = JSON.parse(prefs.gmailLabels);
@@ -41,7 +41,7 @@ export function LabelPicker({ mode = "onboarding", onSaved }: LabelPickerProps) 
         } catch {
           if (prefs.gmailLabel) setSelected([prefs.gmailLabel]);
         }
-      } else if (mode === "onboarding") {
+      } else if (mode === "onboarding" && Array.isArray(labelsData)) {
         const newsletters = labelsData.find(
           (l: Label) => l.name.toLowerCase() === "newsletters"
         );
