@@ -37,6 +37,9 @@ export const editionArticles = sqliteTable("edition_articles", {
   summary: text("summary").notNull(),
   keyPoints: text("key_points").notNull(),
   readingTime: integer("reading_time").notNull(),
+  section: text("section"),
+  position: integer("position"),
+  expandedSummary: text("expanded_summary"),
 });
 
 export const sessions = sqliteTable("sessions", {
@@ -63,6 +66,15 @@ export const userPreferences = sqliteTable("user_preferences", {
     .references(() => sessions.id),
   gmailLabel: text("gmail_label").default("Newsletters"),
   onboardingCompleted: integer("onboarding_completed").default(0),
+});
+
+export const userInterests = sqliteTable("user_interests", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  sessionId: integer("session_id")
+    .notNull()
+    .references(() => sessions.id),
+  topic: text("topic").notNull(),
+  createdAt: text("created_at").notNull(),
 });
 
 export const readingSessions = sqliteTable("reading_sessions", {

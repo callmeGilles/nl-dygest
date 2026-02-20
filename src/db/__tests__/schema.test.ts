@@ -38,7 +38,10 @@ describe("Database schema", () => {
         headline TEXT NOT NULL,
         summary TEXT NOT NULL,
         key_points TEXT NOT NULL,
-        reading_time INTEGER NOT NULL
+        reading_time INTEGER NOT NULL,
+        section TEXT,
+        position INTEGER,
+        expanded_summary TEXT
       );
       CREATE TABLE reading_sessions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -113,6 +116,22 @@ describe("Database schema", () => {
 
     expect(article.category).toBe("Tech");
     expect(article.editionId).toBe(edition.id);
+  });
+
+  it("exports userInterests table with expected columns", () => {
+    expect(schema.userInterests).toBeDefined();
+    const columns = Object.keys(schema.userInterests);
+    expect(columns).toContain("id");
+    expect(columns).toContain("sessionId");
+    expect(columns).toContain("topic");
+    expect(columns).toContain("createdAt");
+  });
+
+  it("has section, position, and expandedSummary columns on editionArticles", () => {
+    const columns = Object.keys(schema.editionArticles);
+    expect(columns).toContain("section");
+    expect(columns).toContain("position");
+    expect(columns).toContain("expandedSummary");
   });
 
   it("should insert a reading session", async () => {

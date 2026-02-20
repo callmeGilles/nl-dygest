@@ -15,6 +15,13 @@
       "when": 1771406654369,
       "tag": "0001_faulty_mephistopheles",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1771582390808,
+      "tag": "0002_marvelous_ender_wiggin",
+      "breakpoints": true
     }
   ]
 }
