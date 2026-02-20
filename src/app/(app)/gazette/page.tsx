@@ -3,10 +3,11 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { GazetteHeader } from "@/components/gazette-header";
-import { GazetteCard } from "@/components/gazette-card";
-import { GazetteLoading } from "@/components/gazette-loading";
+import { HeadlineCard } from "@/components/headline-card";
+import { HookCard } from "@/components/hook-card";
+import { BriefItem } from "@/components/brief-item";
+import { GazetteFooter } from "@/components/gazette-footer";
 import { ArticleOverlay } from "@/components/article-overlay";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface Article {
   id: number;
@@ -18,6 +19,9 @@ interface Article {
   rawHtml: string;
   receivedAt: string;
   category: string;
+  section: string | null;
+  position: number | null;
+  expandedSummary: string | null;
 }
 
 interface Edition {
@@ -25,14 +29,20 @@ interface Edition {
   generatedAt: string;
 }
 
+interface GazetteData {
+  headline: Article[];
+  worth_your_time: Article[];
+  in_brief: Article[];
+}
+
 export default function GazettePage() {
-  const [articles, setArticles] = useState<Article[]>([]);
+  const [gazette, setGazette] = useState<GazetteData | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [editions, setEditions] = useState<Edition[]>([]);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [totalNewsletters, setTotalNewsletters] = useState(0);
   const initialized = useRef(false);
 
   const markOnboardingComplete = useCallback(() => {
@@ -43,51 +53,23 @@ export default function GazettePage() {
     });
   }, []);
 
-  const loadReadyGazette = useCallback(async (editionId: number) => {
+  const loadEdition = useCallback(async (editionId: number) => {
     const res = await fetch(`/api/editions/${editionId}`);
     const data = await res.json();
-    const allArticles = Object.values(data.articles as Record<string, Article[]>).flat();
-    setArticles(allArticles);
+    setGazette({
+      headline: data.articles.headline || [],
+      worth_your_time: data.articles.worth_your_time || [],
+      in_brief: data.articles.in_brief || [],
+    });
+    const total =
+      (data.articles.headline?.length || 0) +
+      (data.articles.worth_your_time?.length || 0) +
+      (data.articles.in_brief?.length || 0);
+    setTotalNewsletters(total);
     setLoading(false);
+    setGenerating(false);
     markOnboardingComplete();
   }, [markOnboardingComplete]);
-
-  const streamGazette = useCallback(
-    (editionId: number, newsletterIds: number[], total: number) => {
-      setGenerating(true);
-      setProgress({ current: 0, total });
-      setLoading(false);
-
-      const eventSource = new EventSource(
-        `/api/gazette/${editionId}/stream?newsletterIds=${newsletterIds.join(",")}`
-      );
-
-      eventSource.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-
-        if (data.type === "article") {
-          setArticles((prev) => [...prev, data.article]);
-          setProgress(data.progress);
-        }
-
-        if (data.type === "complete") {
-          setGenerating(false);
-          markOnboardingComplete();
-          eventSource.close();
-        }
-
-        if (data.type === "error") {
-          setProgress(data.progress);
-        }
-      };
-
-      eventSource.onerror = () => {
-        setGenerating(false);
-        eventSource.close();
-      };
-    },
-    [markOnboardingComplete]
-  );
 
   useEffect(() => {
     if (initialized.current) return;
@@ -99,26 +81,24 @@ export default function GazettePage() {
       .then((data) => setEditions(Array.isArray(data) ? data : []));
 
     // Generate or load today's gazette
+    setGenerating(true);
     fetch("/api/gazette", { method: "POST" })
       .then((r) => r.json())
       .then((data) => {
         if (data.error) {
           setError(data.error);
           setLoading(false);
+          setGenerating(false);
           return;
         }
-
-        if (data.status === "ready") {
-          loadReadyGazette(data.editionId);
-        } else if (data.status === "generating") {
-          streamGazette(data.editionId, data.newsletterIds, data.total);
-        }
+        loadEdition(data.editionId);
       })
       .catch(() => {
         setError("Failed to load gazette");
         setLoading(false);
+        setGenerating(false);
       });
-  }, [loadReadyGazette, streamGazette]);
+  }, [loadEdition]);
 
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -126,63 +106,157 @@ export default function GazettePage() {
     day: "numeric",
   });
 
+  const headlineArticle = gazette?.headline[0];
+  let headlineKeyPoints: string[] = [];
+  if (headlineArticle) {
+    try { headlineKeyPoints = JSON.parse(headlineArticle.keyPoints); } catch { headlineKeyPoints = []; }
+  }
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50/30 via-orange-50/10 to-stone-50">
       <GazetteHeader pastEditions={editions} />
 
       <div className="max-w-xl mx-auto px-4 pb-12">
         {/* Date banner */}
         <div className="text-center py-8">
-          <h1 className="text-xl font-semibold text-foreground">{today}</h1>
-          {articles.length > 0 && (
-            <p className="text-sm text-muted-foreground mt-1">
-              {articles.length} article{articles.length !== 1 ? "s" : ""} from
+          <h1 className="text-xl font-semibold text-stone-900">{today}</h1>
+          {gazette && (
+            <p className="text-sm text-stone-400 mt-1">
+              {totalNewsletters} article{totalNewsletters !== 1 ? "s" : ""} from
               your newsletters
             </p>
           )}
         </div>
 
-        {/* Loading skeleton */}
-        {loading && (
-          <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-32 w-full rounded-xl" />
-            ))}
+        {/* Loading / Generating state */}
+        {(loading || generating) && (
+          <div className="text-center space-y-4 py-12">
+            <div className="flex justify-center">
+              <div className="flex gap-1.5">
+                {[0, 1, 2].map((i) => (
+                  <motion.div
+                    key={i}
+                    className="w-2 h-2 rounded-full bg-amber-400"
+                    animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.1, 0.8] }}
+                    transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-stone-700">
+                Curating your gazette
+              </p>
+              <p className="text-xs text-stone-400">
+                Reading your newsletters and picking the best...
+              </p>
+            </div>
           </div>
         )}
-
-        {/* Generation progress */}
-        {generating && <GazetteLoading {...progress} />}
 
         {/* Error state */}
         {error && (
           <div className="text-center py-12">
-            <p className="text-sm text-muted-foreground">{error}</p>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-sm text-stone-500">{error}</p>
+            <p className="text-xs text-stone-400 mt-1">
               Check back later when new newsletters arrive.
             </p>
           </div>
         )}
 
-        {/* Article cards */}
-        <div className="space-y-3">
-          {articles.map((article, i) => (
-            <motion.div
-              key={article.id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: generating ? 0 : i * 0.05 }}
-            >
-              <GazetteCard
-                article={article}
-                onReadOriginal={setSelectedArticle}
-              />
-            </motion.div>
-          ))}
-        </div>
+        {/* 3-tier gazette layout */}
+        {gazette && !loading && !generating && (
+          <div className="space-y-8">
+            {/* Section 1: Headline */}
+            {headlineArticle && (
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                <HeadlineCard
+                  interestTag={headlineArticle.category}
+                  title={headlineArticle.headline}
+                  summary={headlineArticle.summary}
+                  takeaways={headlineKeyPoints}
+                  sender={headlineArticle.sender}
+                  receivedAt={headlineArticle.receivedAt}
+                  onReadFull={() => setSelectedArticle(headlineArticle)}
+                />
+              </motion.div>
+            )}
+
+            {/* Section 2: Worth Your Time */}
+            {gazette.worth_your_time.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-3 px-1">
+                  Worth Your Time
+                </h3>
+                <div className="space-y-3">
+                  {gazette.worth_your_time.map((article, i) => {
+                    let takeaways: string[] = [];
+                    try { takeaways = JSON.parse(article.keyPoints); } catch { takeaways = []; }
+                    return (
+                      <motion.div
+                        key={article.id}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: 0.1 + i * 0.05 }}
+                      >
+                        <HookCard
+                          interestTag={article.category}
+                          hook={article.headline}
+                          expandedSummary={article.expandedSummary || article.summary}
+                          takeaways={takeaways}
+                          sender={article.sender}
+                          receivedAt={article.receivedAt}
+                          onReadFull={() => setSelectedArticle(article)}
+                        />
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Section 3: In Brief */}
+            {gazette.in_brief.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2 px-1">
+                  In Brief
+                </h3>
+                <div className="bg-card rounded-xl border border-stone-100 divide-y divide-stone-100">
+                  {gazette.in_brief.map((article, i) => (
+                    <motion.div
+                      key={article.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.2, delay: 0.2 + i * 0.03 }}
+                    >
+                      <BriefItem
+                        interestTag={article.category}
+                        oneLiner={article.headline}
+                        expandedSummary={article.expandedSummary || article.summary}
+                        sender={article.sender}
+                        onReadFull={() => setSelectedArticle(article)}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Footer */}
+            <GazetteFooter
+              sourcesToday={totalNewsletters}
+              libraryTotal={totalNewsletters}
+              librarySurfaced={totalNewsletters}
+            />
+          </div>
+        )}
       </div>
 
-      {/* Article overlay for "Read original" */}
+      {/* Article overlay for "Read full" */}
       <ArticleOverlay
         article={selectedArticle}
         onClose={() => setSelectedArticle(null)}
