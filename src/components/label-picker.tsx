@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OnboardingStepper } from "./onboarding-stepper";
+import { Check } from "lucide-react";
 
 interface Label {
   id: string;
@@ -15,7 +16,7 @@ interface Label {
 
 export function LabelPicker() {
   const [labels, setLabels] = useState<Label[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const router = useRouter();
@@ -29,30 +30,42 @@ export function LabelPicker() {
         const newsletters = data.find(
           (l: Label) => l.name.toLowerCase() === "newsletters"
         );
-        if (newsletters) setSelected(newsletters.name);
+        if (newsletters) setSelected([newsletters.name]);
         setLoading(false);
       });
   }, []);
 
+  const toggleLabel = (name: string) => {
+    setSelected((prev) =>
+      prev.includes(name)
+        ? prev.filter((n) => n !== name)
+        : prev.length < 3
+          ? [...prev, name]
+          : prev
+    );
+  };
+
   const handleContinue = async () => {
-    if (!selected) return;
+    if (selected.length === 0) return;
     setSaving(true);
     await fetch("/api/preferences", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ gmailLabel: selected }),
+      body: JSON.stringify({ gmailLabels: selected }),
     });
-    router.push("/gazette");
+    router.push("/onboarding/interests");
   };
 
   return (
     <div className="space-y-6">
-      <OnboardingStepper currentStep={1} steps={["Connect", "Select", "Read"]} />
+      <OnboardingStepper currentStep={1} steps={["Connect", "Labels", "Interests"]} />
 
       <div className="text-center">
-        <h2 className="text-xl font-semibold text-slate-900">Choose your newsletter folder</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Select the Gmail label that contains your newsletters
+        <h2 className="text-xl font-semibold text-stone-900">
+          Choose your newsletter folders
+        </h2>
+        <p className="text-sm text-stone-500 mt-1">
+          Select up to 3 Gmail labels that contain your newsletters
         </p>
       </div>
 
@@ -66,15 +79,20 @@ export function LabelPicker() {
             <Card
               key={label.id}
               className={`p-4 cursor-pointer transition-all duration-200 hover:shadow-md ${
-                selected === label.name
-                  ? "ring-2 ring-slate-900 bg-slate-50"
-                  : "hover:bg-slate-50"
+                selected.includes(label.name)
+                  ? "ring-2 ring-stone-900 bg-stone-50"
+                  : "hover:bg-stone-50"
               }`}
-              onClick={() => setSelected(label.name)}
+              onClick={() => toggleLabel(label.name)}
             >
               <div className="flex items-center justify-between">
-                <span className="font-medium text-slate-900">{label.name}</span>
-                <span className="text-sm text-slate-400">
+                <div className="flex items-center gap-3">
+                  {selected.includes(label.name) && (
+                    <Check className="h-4 w-4 text-stone-900" />
+                  )}
+                  <span className="font-medium text-stone-900">{label.name}</span>
+                </div>
+                <span className="text-sm text-stone-400">
                   {label.messagesTotal} messages
                 </span>
               </div>
@@ -83,9 +101,15 @@ export function LabelPicker() {
         )}
       </div>
 
+      {selected.length > 0 && (
+        <p className="text-center text-xs text-stone-400">
+          {selected.length}/3 selected
+        </p>
+      )}
+
       <Button
         onClick={handleContinue}
-        disabled={!selected || saving}
+        disabled={selected.length === 0 || saving}
         className="w-full rounded-xl h-12 text-base"
         size="lg"
       >
