@@ -15,9 +15,12 @@ export default async function LandingPage() {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="max-w-md w-full text-center space-y-8">
         <div className="space-y-2">
-          <h1 className="text-5xl font-bold tracking-tight text-foreground">
-            briefflow
-          </h1>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/briefflow-logo.svg"
+            alt="briefflow"
+            className="mx-auto h-11"
+          />
           <p className="text-lg text-muted-foreground">
             Your daily newsletter companion
           </p>

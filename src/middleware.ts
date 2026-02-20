@@ -11,7 +11,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Allow static assets and Next.js internals
-  if (pathname.startsWith("/_next") || pathname.startsWith("/favicon")) {
+  if (pathname.startsWith("/_next") || pathname.startsWith("/favicon") || pathname.match(/\.\w+$/)) {
     return NextResponse.next();
   }
 
