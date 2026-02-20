@@ -1,0 +1,1 @@
+ALTER TABLE `user_preferences` ADD `gmail_labels` text DEFAULT '["Newsletters"]';

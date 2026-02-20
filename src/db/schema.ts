@@ -65,6 +65,7 @@ export const userPreferences = sqliteTable("user_preferences", {
     .notNull()
     .references(() => sessions.id),
   gmailLabel: text("gmail_label").default("Newsletters"),
+  gmailLabels: text("gmail_labels").default('["Newsletters"]'),
   onboardingCompleted: integer("onboarding_completed").default(0),
 });
 
