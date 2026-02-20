@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Newspaper, Settings, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,11 +23,14 @@ interface GazetteHeaderProps {
 export function GazetteHeader({ pastEditions = [] }: GazetteHeaderProps) {
   return (
     <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 bg-background/80 backdrop-blur-sm border-b border-border">
-      <Link
-        href="/gazette"
-        className="font-semibold text-base text-foreground tracking-tight"
-      >
-        briefflow
+      <Link href="/gazette" className="flex items-center">
+        <Image
+          src="/briefflow-logo.svg"
+          alt="briefflow"
+          width={65}
+          height={18}
+          priority
+        />
       </Link>
 
       <nav className="flex items-center gap-1">
