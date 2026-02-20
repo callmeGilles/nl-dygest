@@ -56,7 +56,7 @@ export function InterestPicker() {
           What topics matter to you?
         </h2>
         <p className="text-sm text-stone-500 mt-1">
-          Pick 3-8 topics. We'll use these to curate your gazette.
+          Pick 3-8 topics. We&apos;ll use these to curate your gazette.
         </p>
       </div>
 

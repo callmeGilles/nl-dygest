@@ -12,7 +12,7 @@ export function GazetteFooter({
   return (
     <div className="text-center py-10 mt-8 border-t border-stone-100">
       <p className="text-base font-medium text-stone-700 mb-2">
-        That's it for today.
+        That&apos;s it for today.
       </p>
       <p className="text-sm text-stone-400">
         {sourcesToday} sources · {libraryTotal.toLocaleString()} in your library

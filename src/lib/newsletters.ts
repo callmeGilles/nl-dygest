@@ -84,19 +84,6 @@ export async function fetchNewsletters(
   return messages.map((m) => parseGmailMessage(m.data));
 }
 
-export function selectRandomNewsletters<T>(
-  items: T[],
-  min: number,
-  max: number
-): T[] {
-  if (items.length <= min) return [...items];
-  const count = Math.min(
-    items.length,
-    Math.floor(Math.random() * (max - min + 1)) + min
-  );
-  const shuffled = [...items].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
-}
 
 export async function markAsRead(gmailId: string, accessToken: string, refreshToken?: string | null) {
   const gmail = getGmailClient(accessToken, refreshToken);
