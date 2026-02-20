@@ -28,16 +28,16 @@ export function HeadlineCard({
   });
 
   return (
-    <article className="bg-gradient-to-br from-amber-50/80 to-orange-50/40 rounded-2xl p-6 shadow-sm border border-amber-100/60">
-      <Badge className="bg-amber-100 text-amber-800 text-xs font-medium border-0 mb-4">
+    <article className="bg-card rounded-2xl p-6 shadow-sm border border-border">
+      <Badge className="bg-stone-100 text-stone-600 text-xs font-medium border-0 mb-4">
         {interestTag}
       </Badge>
 
-      <h2 className="text-2xl font-bold text-stone-900 leading-tight mb-3">
+      <h2 className="text-2xl font-bold text-foreground leading-tight mb-3">
         {title}
       </h2>
 
-      <p className="text-sm text-stone-400 mb-4">
+      <p className="text-sm text-muted-foreground mb-4">
         {sender.replace(/<.*>/, "").trim()} · {date}
       </p>
 
@@ -46,9 +46,9 @@ export function HeadlineCard({
       </p>
 
       {takeaways.length > 0 && (
-        <div className="border-l-2 border-amber-300 pl-4 mb-5 space-y-2">
+        <div className="border-l-2 border-stone-200 pl-4 mb-5 space-y-2">
           {takeaways.map((point, i) => (
-            <p key={i} className="text-sm text-stone-600 leading-relaxed">
+            <p key={i} className="text-sm text-stone-500 leading-relaxed">
               {point}
             </p>
           ))}
@@ -57,10 +57,10 @@ export function HeadlineCard({
 
       <button
         onClick={onReadFull}
-        className="flex items-center gap-2 text-sm font-medium text-amber-800 hover:text-amber-950 transition-colors"
+        className="flex items-center gap-2 text-sm font-medium text-stone-500 hover:text-foreground transition-colors"
       >
         <FileText className="h-4 w-4" />
-        Read full newsletter
+        Read original
       </button>
     </article>
   );

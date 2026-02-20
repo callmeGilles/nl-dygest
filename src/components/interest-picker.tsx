@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { OnboardingStepper } from "./onboarding-stepper";
@@ -12,31 +12,65 @@ const SUGGESTED_TOPICS = [
   "Health", "Climate", "Crypto",
 ];
 
-export function InterestPicker() {
+interface InterestPickerProps {
+  mode?: "onboarding" | "settings";
+  onSaved?: () => void;
+}
+
+export function InterestPicker({ mode = "onboarding", onSaved }: InterestPickerProps) {
   const [selected, setSelected] = useState<string[]>([]);
   const [customInput, setCustomInput] = useState("");
   const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(mode === "onboarding");
   const router = useRouter();
 
+  // In settings mode, load current interests
+  useEffect(() => {
+    if (mode !== "settings") return;
+    fetch("/api/interests")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setSelected(data as string[]);
+        }
+        setLoaded(true);
+      });
+  }, [mode]);
+
+  const isSelected = (topic: string) =>
+    selected.some((t) => t.toLowerCase() === topic.toLowerCase());
+
   const toggleTopic = (topic: string) => {
-    setSelected((prev) =>
-      prev.includes(topic)
-        ? prev.filter((t) => t !== topic)
-        : prev.length < 8
-          ? [...prev, topic]
-          : prev
-    );
+    if (isSelected(topic)) {
+      setSelected((prev) =>
+        prev.filter((t) => t.toLowerCase() !== topic.toLowerCase())
+      );
+    } else if (selected.length < 8) {
+      setSelected((prev) => [...prev, topic]);
+    }
   };
 
   const addCustom = () => {
     const topic = customInput.trim();
-    if (topic && !selected.includes(topic) && selected.length < 8) {
+    if (!topic || selected.length >= 8) return;
+
+    // If it matches a suggested topic (case-insensitive), select that instead
+    const matchingSuggested = SUGGESTED_TOPICS.find(
+      (t) => t.toLowerCase() === topic.toLowerCase()
+    );
+
+    if (matchingSuggested) {
+      if (!isSelected(matchingSuggested)) {
+        setSelected((prev) => [...prev, matchingSuggested]);
+      }
+    } else if (!isSelected(topic)) {
       setSelected((prev) => [...prev, topic]);
-      setCustomInput("");
     }
+
+    setCustomInput("");
   };
 
-  const handleContinue = async () => {
+  const handleSave = async () => {
     if (selected.length < 3) return;
     setSaving(true);
     await fetch("/api/interests", {
@@ -44,18 +78,31 @@ export function InterestPicker() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ topics: selected }),
     });
-    router.push("/gazette");
+    if (onSaved) {
+      onSaved();
+    } else {
+      router.push("/gazette");
+    }
   };
+
+  // Custom topics = selected items not in the suggested list
+  const customTopics = selected.filter(
+    (t) => !SUGGESTED_TOPICS.some((s) => s.toLowerCase() === t.toLowerCase())
+  );
+
+  if (!loaded) return null;
 
   return (
     <div className="space-y-6">
-      <OnboardingStepper currentStep={2} steps={["Connect", "Labels", "Interests"]} />
+      {mode === "onboarding" && (
+        <OnboardingStepper currentStep={2} steps={["Connect", "Labels", "Interests"]} />
+      )}
 
       <div className="text-center">
-        <h2 className="text-xl font-semibold text-stone-900">
-          What topics matter to you?
+        <h2 className="text-xl font-semibold text-foreground">
+          {mode === "settings" ? "Your interests" : "What topics matter to you?"}
         </h2>
-        <p className="text-sm text-stone-500 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Pick 3-8 topics. We&apos;ll use these to curate your gazette.
         </p>
       </div>
@@ -67,9 +114,9 @@ export function InterestPicker() {
             key={topic}
             onClick={() => toggleTopic(topic)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-              selected.includes(topic)
-                ? "bg-stone-900 text-white"
-                : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+              isSelected(topic)
+                ? "bg-foreground text-background"
+                : "bg-secondary text-muted-foreground hover:bg-border"
             }`}
           >
             {topic}
@@ -85,7 +132,7 @@ export function InterestPicker() {
           value={customInput}
           onChange={(e) => setCustomInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && addCustom()}
-          className="flex-1 px-4 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-stone-300"
+          className="flex-1 px-4 py-2 rounded-xl border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
         <Button
           variant="outline"
@@ -98,36 +145,34 @@ export function InterestPicker() {
       </div>
 
       {/* Selected custom topics (remove button) */}
-      {selected.filter((t) => !SUGGESTED_TOPICS.includes(t)).length > 0 && (
+      {customTopics.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {selected
-            .filter((t) => !SUGGESTED_TOPICS.includes(t))
-            .map((topic) => (
-              <span
-                key={topic}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm bg-stone-900 text-white"
-              >
-                {topic}
-                <button onClick={() => toggleTopic(topic)}>
-                  <X className="h-3 w-3" />
-                </button>
-              </span>
-            ))}
+          {customTopics.map((topic) => (
+            <span
+              key={topic}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm bg-foreground text-background"
+            >
+              {topic}
+              <button onClick={() => toggleTopic(topic)}>
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          ))}
         </div>
       )}
 
       {/* Counter */}
-      <p className="text-center text-xs text-stone-400">
+      <p className="text-center text-xs text-muted-foreground">
         {selected.length}/8 selected {selected.length < 3 && `(${3 - selected.length} more needed)`}
       </p>
 
       <Button
-        onClick={handleContinue}
+        onClick={handleSave}
         disabled={selected.length < 3 || saving}
         className="w-full rounded-xl h-12 text-base"
         size="lg"
       >
-        {saving ? "Saving..." : "Start reading"}
+        {saving ? "Saving..." : mode === "settings" ? "Save" : "Start reading"}
       </Button>
     </div>
   );

@@ -19,10 +19,10 @@ interface Article {
 }
 
 const categoryColors: Record<string, string> = {
-  Tech: "bg-sky-100 text-sky-700",
-  Product: "bg-violet-100 text-violet-700",
-  Business: "bg-emerald-100 text-emerald-700",
-  Design: "bg-rose-100 text-rose-700",
+  Tech: "bg-stone-100 text-stone-600",
+  Product: "bg-stone-100 text-stone-600",
+  Business: "bg-stone-100 text-stone-600",
+  Design: "bg-stone-100 text-stone-600",
   Other: "bg-stone-100 text-stone-600",
 };
 
@@ -85,7 +85,7 @@ export function ArticleOverlay({ article, onClose }: ArticleOverlayProps) {
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
             className="fixed right-0 top-0 h-full w-full max-w-2xl bg-card z-50 shadow-2xl overflow-y-auto"
           >
-            <div className="p-6 md:p-8 space-y-6">
+            <div className="p-4 sm:p-6 md:p-8 space-y-5 sm:space-y-6">
               {/* Close button */}
               <div className="flex justify-end">
                 <Button
@@ -119,24 +119,24 @@ export function ArticleOverlay({ article, onClose }: ArticleOverlayProps) {
               </div>
 
               {/* Metadata bar */}
-              <div className="flex items-center gap-4 bg-stone-50/50 rounded-lg px-4 py-3 text-sm text-stone-500">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 bg-stone-50/50 rounded-lg px-4 py-3 text-sm text-stone-500">
                 <span className="flex items-center gap-1.5">
-                  <User className="h-3.5 w-3.5" />
+                  <User className="h-3.5 w-3.5 shrink-0" />
                   {article.sender.replace(/<.*>/, "").trim()}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5" />
+                  <Calendar className="h-3.5 w-3.5 shrink-0" />
                   {date}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5" />
+                  <Clock className="h-3.5 w-3.5 shrink-0" />
                   {article.readingTime} min read
                 </span>
               </div>
 
               {/* Key points */}
               {keyPoints.length > 0 && (
-                <div className="border-l-2 border-amber-300 pl-4 space-y-2">
+                <div className="border-l-2 border-stone-200 pl-4 space-y-2">
                   <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wider">
                     Key Points
                   </h2>

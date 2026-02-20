@@ -85,6 +85,7 @@ Select 7-10 newsletters and assign them to sections:
 - Hooks must create curiosity. Not summaries. Not descriptions.
 - If a newsletter is clearly outdated or time-sensitive and expired, skip it
 - If fewer than 7 candidates are available, adjust section sizes (minimum: 1 headline + 1-2 others)
+- **LANGUAGE**: For each newsletter, write the title, summary, hook, takeaways, and oneLiner in the SAME language as the original newsletter content. If the newsletter is in French, write in French. If in English, write in English. Match the language of each individual newsletter.
 - Output valid JSON only. No markdown, no commentary.
 
 ## Output Format

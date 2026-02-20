@@ -19,10 +19,17 @@ export async function GET(request: NextRequest) {
     expiry_date: tokens.expiry_date || undefined,
   });
 
-  const preferences = await getPreferences(db, session.id);
-  const redirectUrl = preferences?.onboardingCompleted
-    ? "/gazette"
-    : "/onboarding/label";
+  // Single-user app: if editions already exist, user has been through onboarding before
+  const existingEditions = await db.query.editions.findMany({ limit: 1 });
+  const isReturningUser = existingEditions.length > 0;
+
+  if (isReturningUser) {
+    // Mark onboarding as completed for the new session
+    const { updatePreferences } = await import("@/lib/session");
+    await updatePreferences(db, session.id, { onboardingCompleted: 1 });
+  }
+
+  const redirectUrl = isReturningUser ? "/gazette" : "/onboarding/label";
 
   const response = NextResponse.redirect(new URL(redirectUrl, request.url));
   response.cookies.set(getSessionCookieName(), session.token, {

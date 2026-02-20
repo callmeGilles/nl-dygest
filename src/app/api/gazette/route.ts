@@ -109,9 +109,18 @@ export async function POST() {
       .values({ generatedAt: new Date().toISOString() })
       .returning();
 
+    // Estimate reading time from newsletter content (~225 words/min)
+    const estimateReadingTime = (newsletterId: number): number => {
+      const nl = allNewsletters.find((n) => n.id === newsletterId);
+      if (!nl) return 3;
+      const wordCount = nl.rawHtml.replace(/<[^>]+>/g, " ").split(/\s+/).length;
+      return Math.max(1, Math.round(wordCount / 225));
+    };
+
     // Store gazette articles
     const storeArticle = async (
       newsletterId: number,
+      category: string,
       section: string,
       position: number,
       headline: string,
@@ -122,20 +131,21 @@ export async function POST() {
       await db.insert(schema.editionArticles).values({
         editionId: edition.id,
         newsletterId,
-        category: section === "headline" ? "Featured" : "General",
+        category,
         section,
         position,
         headline,
         summary,
         keyPoints: JSON.stringify(keyPoints),
         expandedSummary,
-        readingTime: 0,
+        readingTime: estimateReadingTime(newsletterId),
       });
     };
 
     // Store headline
     await storeArticle(
       gazette.headline.newsletterId,
+      gazette.headline.interestTag,
       "headline",
       0,
       gazette.headline.title,
@@ -149,6 +159,7 @@ export async function POST() {
       const item = gazette.worthYourTime[i];
       await storeArticle(
         item.newsletterId,
+        item.interestTag,
         "worth_your_time",
         i,
         item.hook,
@@ -163,6 +174,7 @@ export async function POST() {
       const item = gazette.inBrief[i];
       await storeArticle(
         item.newsletterId,
+        item.interestTag,
         "in_brief",
         i,
         item.oneLiner,

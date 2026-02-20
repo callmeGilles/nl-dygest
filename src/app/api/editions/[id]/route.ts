@@ -27,8 +27,15 @@ export async function GET(
       const newsletter = await db.query.newsletters.findFirst({
         where: eq(schema.newsletters.id, article.newsletterId),
       });
+      // Compute reading time from content (~225 words/min)
+      const wordCount = newsletter
+        ? newsletter.rawHtml.replace(/<[^>]+>/g, " ").split(/\s+/).length
+        : 0;
+      const readingTime = Math.max(1, Math.round(wordCount / 225));
+
       return {
         ...article,
+        readingTime,
         sender: newsletter?.sender || "",
         rawHtml: newsletter?.rawHtml || "",
         receivedAt: newsletter?.receivedAt || "",

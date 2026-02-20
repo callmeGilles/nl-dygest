@@ -8,9 +8,9 @@ interface StatCardProps {
 }
 
 const colorMap = {
-  orange: "text-orange-500",
-  blue: "text-blue-600",
-  green: "text-green-600",
+  orange: "text-stone-700",
+  blue: "text-stone-700",
+  green: "text-stone-700",
   slate: "text-foreground",
 };
 

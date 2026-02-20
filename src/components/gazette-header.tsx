@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Settings } from "lucide-react";
+import { Newspaper, Settings, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -21,32 +20,28 @@ interface GazetteHeaderProps {
 }
 
 export function GazetteHeader({ pastEditions = [] }: GazetteHeaderProps) {
-  const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    window.location.href = "/";
-  };
-
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 bg-amber-50/80 backdrop-blur-sm border-b border-amber-100/40">
+    <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 bg-background/80 backdrop-blur-sm border-b border-border">
       <Link
         href="/gazette"
         className="font-semibold text-base text-foreground tracking-tight"
       >
         briefflow
       </Link>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-            <Settings className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          {pastEditions.length > 0 && (
-            <>
-              <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-                Past gazettes
-              </div>
-              {pastEditions.slice(0, 7).map((edition) => (
+
+      <nav className="flex items-center gap-1">
+        {/* Editions dropdown */}
+        {pastEditions.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-1.5 text-sm">
+                <Newspaper className="h-4 w-4" />
+                <span className="hidden sm:inline">Editions</span>
+                <ChevronDown className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              {pastEditions.slice(0, 10).map((edition) => (
                 <DropdownMenuItem key={edition.id} asChild>
                   <Link href={`/gazette/${edition.id}`}>
                     {new Date(edition.generatedAt).toLocaleDateString("en-US", {
@@ -57,14 +52,18 @@ export function GazetteHeader({ pastEditions = [] }: GazetteHeaderProps) {
                   </Link>
                 </DropdownMenuItem>
               ))}
-              <DropdownMenuSeparator />
-            </>
-          )}
-          <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-            Sign out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
+        {/* Settings link */}
+        <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground gap-1.5 text-sm">
+          <Link href="/settings">
+            <Settings className="h-4 w-4" />
+            <span className="hidden sm:inline">Settings</span>
+          </Link>
+        </Button>
+      </nav>
     </header>
   );
 }

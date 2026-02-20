@@ -3,6 +3,15 @@ import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import { updatePreferences } from "@/lib/session";
 import { db } from "@/db";
 
+export async function GET() {
+  const auth = await getAuthenticatedSession();
+  if (!auth) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  return NextResponse.json(auth.preferences || {});
+}
+
 export async function PATCH(request: NextRequest) {
   const auth = await getAuthenticatedSession();
   if (!auth) {

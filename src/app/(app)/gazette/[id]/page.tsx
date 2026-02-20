@@ -26,6 +26,11 @@ interface Article {
   expandedSummary: string | null;
 }
 
+interface Edition {
+  id: number;
+  generatedAt: string;
+}
+
 interface GazetteData {
   headline: Article[];
   worth_your_time: Article[];
@@ -37,10 +42,18 @@ export default function GazetteByIdPage() {
   const [gazette, setGazette] = useState<GazetteData | null>(null);
   const [date, setDate] = useState("");
   const [loading, setLoading] = useState(true);
+  const [editions, setEditions] = useState<Edition[]>([]);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [totalNewsletters, setTotalNewsletters] = useState(0);
 
   useEffect(() => {
+    fetch("/api/editions")
+      .then((r) => r.json())
+      .then((data) => setEditions(Array.isArray(data) ? data : []));
+  }, []);
+
+  useEffect(() => {
+    setLoading(true);
     fetch(`/api/editions/${params.id}`)
       .then((r) => r.json())
       .then((data) => {
@@ -73,14 +86,14 @@ export default function GazetteByIdPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50/30 via-orange-50/10 to-stone-50">
-      <GazetteHeader />
+    <div className="min-h-screen bg-background">
+      <GazetteHeader pastEditions={editions} />
 
       <div className="max-w-xl mx-auto px-4 pb-12">
         <div className="text-center py-8">
-          <h1 className="text-xl font-semibold text-stone-900">{date}</h1>
+          <h1 className="text-xl font-semibold text-foreground">{date}</h1>
           {gazette && (
-            <p className="text-sm text-stone-400 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               {totalNewsletters} article{totalNewsletters !== 1 ? "s" : ""} from
               your newsletters
             </p>
@@ -99,27 +112,32 @@ export default function GazetteByIdPage() {
           <div className="space-y-8">
             {/* Section 1: Headline */}
             {headlineArticle && (
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-              >
-                <HeadlineCard
-                  interestTag={headlineArticle.category}
-                  title={headlineArticle.headline}
-                  summary={headlineArticle.summary}
-                  takeaways={headlineKeyPoints}
-                  sender={headlineArticle.sender}
-                  receivedAt={headlineArticle.receivedAt}
-                  onReadFull={() => setSelectedArticle(headlineArticle)}
-                />
-              </motion.div>
+              <div>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">
+                  Today&apos;s Pick
+                </h3>
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <HeadlineCard
+                    interestTag={headlineArticle.category}
+                    title={headlineArticle.headline}
+                    summary={headlineArticle.summary}
+                    takeaways={headlineKeyPoints}
+                    sender={headlineArticle.sender}
+                    receivedAt={headlineArticle.receivedAt}
+                    onReadFull={() => setSelectedArticle(headlineArticle)}
+                  />
+                </motion.div>
+              </div>
             )}
 
             {/* Section 2: Worth Your Time */}
             {gazette.worth_your_time.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-3 px-1">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">
                   Worth Your Time
                 </h3>
                 <div className="space-y-3">
@@ -152,10 +170,10 @@ export default function GazetteByIdPage() {
             {/* Section 3: In Brief */}
             {gazette.in_brief.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2 px-1">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
                   In Brief
                 </h3>
-                <div className="bg-card rounded-xl border border-stone-100 divide-y divide-stone-100">
+                <div className="bg-card rounded-xl border border-border divide-y divide-border">
                   {gazette.in_brief.map((article, i) => (
                     <motion.div
                       key={article.id}

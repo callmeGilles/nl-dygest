@@ -113,7 +113,7 @@ export default function GazettePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50/30 via-orange-50/10 to-stone-50">
+    <div className="min-h-screen bg-background">
       <GazetteHeader pastEditions={editions} />
 
       <div className="max-w-xl mx-auto px-4 pb-12">
@@ -136,7 +136,7 @@ export default function GazettePage() {
                 {[0, 1, 2].map((i) => (
                   <motion.div
                     key={i}
-                    className="w-2 h-2 rounded-full bg-amber-400"
+                    className="w-2 h-2 rounded-full bg-stone-400"
                     animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.1, 0.8] }}
                     transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
                   />
@@ -169,12 +169,16 @@ export default function GazettePage() {
           <div className="space-y-8">
             {/* Section 1: Headline */}
             {headlineArticle && (
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-              >
-                <HeadlineCard
+              <div>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">
+                  Today&apos;s Pick
+                </h3>
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <HeadlineCard
                   interestTag={headlineArticle.category}
                   title={headlineArticle.headline}
                   summary={headlineArticle.summary}
@@ -183,13 +187,14 @@ export default function GazettePage() {
                   receivedAt={headlineArticle.receivedAt}
                   onReadFull={() => setSelectedArticle(headlineArticle)}
                 />
-              </motion.div>
+                </motion.div>
+              </div>
             )}
 
             {/* Section 2: Worth Your Time */}
             {gazette.worth_your_time.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-3 px-1">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">
                   Worth Your Time
                 </h3>
                 <div className="space-y-3">
@@ -222,7 +227,7 @@ export default function GazettePage() {
             {/* Section 3: In Brief */}
             {gazette.in_brief.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2 px-1">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
                   In Brief
                 </h3>
                 <div className="bg-card rounded-xl border border-stone-100 divide-y divide-stone-100">

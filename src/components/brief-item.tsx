@@ -24,7 +24,7 @@ export function BriefItem({
   return (
     <div
       onClick={() => setExpanded(!expanded)}
-      className="px-4 py-3 cursor-pointer hover:bg-amber-50/50 transition-colors"
+      className="px-4 py-3 cursor-pointer hover:bg-stone-50 transition-colors"
     >
       {/* Header line */}
       <p className="text-xs text-stone-400 mb-1">
@@ -54,7 +54,7 @@ export function BriefItem({
             className="flex items-center gap-2 text-xs text-stone-400 hover:text-stone-700 transition-colors mt-2"
           >
             <FileText className="h-3 w-3" />
-            Read full
+            Read original
           </button>
         </div>
       </div>

@@ -33,7 +33,7 @@ export function HookCard({
   return (
     <article
       onClick={() => setExpanded(!expanded)}
-      className="bg-card rounded-xl p-5 shadow-sm shadow-amber-100/50 cursor-pointer active:shadow-md transition-shadow border border-stone-100"
+      className="bg-card rounded-xl p-5 shadow-sm cursor-pointer active:shadow-md transition-shadow border border-border"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
@@ -72,7 +72,7 @@ export function HookCard({
           </p>
 
           {takeaways.length > 0 && (
-            <div className="mt-3 border-l-2 border-amber-200 pl-3 space-y-1.5">
+            <div className="mt-3 border-l-2 border-stone-200 pl-3 space-y-1.5">
               {takeaways.map((point, i) => (
                 <p key={i} className="text-sm text-stone-500">
                   {point}
@@ -90,7 +90,7 @@ export function HookCard({
               className="flex items-center gap-2 text-sm text-stone-500 hover:text-stone-900 transition-colors"
             >
               <FileText className="h-3.5 w-3.5" />
-              Read full newsletter
+              Read original
             </button>
           </div>
         </div>
