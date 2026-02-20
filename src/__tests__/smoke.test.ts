@@ -40,7 +40,10 @@ describe("End-to-end smoke test", () => {
         headline TEXT NOT NULL,
         summary TEXT NOT NULL,
         key_points TEXT NOT NULL,
-        reading_time INTEGER NOT NULL
+        reading_time INTEGER NOT NULL,
+        section TEXT,
+        position INTEGER,
+        expanded_summary TEXT
       );
       CREATE TABLE reading_sessions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

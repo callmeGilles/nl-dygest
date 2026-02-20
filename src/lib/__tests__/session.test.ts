@@ -28,6 +28,7 @@ function createTestDb() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       session_id INTEGER NOT NULL REFERENCES sessions(id),
       gmail_label TEXT DEFAULT 'Newsletters',
+      gmail_labels TEXT DEFAULT '["Newsletters"]',
       onboarding_completed INTEGER DEFAULT 0
     );
   `);
