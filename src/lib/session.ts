@@ -40,6 +40,7 @@ export async function deleteSession(db: DbInstance, token: string) {
   if (session) {
     await db.delete(schema.userTokens).where(eq(schema.userTokens.sessionId, session.id));
     await db.delete(schema.userPreferences).where(eq(schema.userPreferences.sessionId, session.id));
+    await db.delete(schema.userInterests).where(eq(schema.userInterests.sessionId, session.id));
   }
   await db.delete(schema.sessions).where(eq(schema.sessions.token, token));
 }

@@ -12,19 +12,19 @@ export default async function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="max-w-md w-full text-center space-y-8">
         <div className="space-y-2">
-          <h1 className="text-5xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-5xl font-bold tracking-tight text-foreground">
             briefflow
           </h1>
-          <p className="text-lg text-slate-500">
+          <p className="text-lg text-muted-foreground">
             Your daily newsletter companion
           </p>
         </div>
 
         <div className="space-y-4 pt-4">
-          <p className="text-sm text-slate-600 max-w-xs mx-auto">
+          <p className="text-sm text-muted-foreground max-w-xs mx-auto">
             Your daily newsletter digest, curated and summarized. Zero effort.
           </p>
 
@@ -41,7 +41,7 @@ export default async function LandingPage() {
           </Button>
         </div>
 
-        <p className="text-xs text-slate-400 pt-8">
+        <p className="text-xs text-muted-foreground/60 pt-8">
           Connect your Gmail to get started
         </p>
       </div>

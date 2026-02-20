@@ -11,7 +11,7 @@ const colorMap = {
   orange: "text-orange-500",
   blue: "text-blue-600",
   green: "text-green-600",
-  slate: "text-slate-700",
+  slate: "text-foreground",
 };
 
 export function StatCard({ value, label, icon, color }: StatCardProps) {
@@ -21,7 +21,7 @@ export function StatCard({ value, label, icon, color }: StatCardProps) {
         <span className="text-2xl">{icon}</span>
         <span className={`text-3xl font-bold ${colorMap[color]}`}>{value}</span>
       </div>
-      <p className="text-sm text-slate-500">{label}</p>
+      <p className="text-sm text-muted-foreground">{label}</p>
     </Card>
   );
 }
